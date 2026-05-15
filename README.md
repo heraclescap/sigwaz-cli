@@ -320,8 +320,7 @@ The CLI is powerful, but if you are doing **day-to-day conversions**, working wi
 - **Graphical settings** — rule ID base, severity mapping, email alert levels, product filters — all configurable through a UI, no flags to look up
 - **Identical output** — the web app runs the exact same engine as this CLI; a rule converted in the browser produces byte-for-byte the same XML as `sigwaz convert`
 
-The web application is **self-hosted** (Docker Compose, one-command deployment) and is not publicly distributed.  
-Contact the maintainer or refer to the private repository for access and deployment instructions.
+The web application is available at **[sigwaz.com](https://sigwaz.com)**.
 
 ---
 
