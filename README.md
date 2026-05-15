@@ -66,17 +66,17 @@ python sigwaz.py convert rule.yml
 <!-- Description: Detects PowerShell download cradle patterns used for payload delivery -->
 <!-- Date: 2024/01/15 | Status: stable -->
 <!-- References: https://github.com/SigmaHQ/sigma/tree/master/rules -->
-<group name="sigma,windows,process_creation,">
+<group name="sigma,">
 
   <rule id="900001" level="12">
     <if_sid>61603</if_sid>
     <field name="win.eventdata.commandLine" type="pcre2">(?i)IEX \(New\-Object|Invoke\-Expression|DownloadString\(</field>
     <description>Suspicious PowerShell Download Cradle</description>
     <options>no_full_log</options>
+    <group>windows,process_creation,</group>
     <mitre>
       <id>T1059.001</id>
     </mitre>
-    <group>execution,</group>
   </rule>
 
 </group>
@@ -309,7 +309,6 @@ The CLI is powerful, but if you are doing **day-to-day conversions**, working wi
 | Batch / ZIP | ✓ | ✓ drag & drop |
 | Output download | file system | one-click `.xml` or `.zip` |
 | Settings | flags / config file | graphical panel |
-| Team sharing | script + docs | share a URL |
 | Syntax highlighting | — | ✓ YAML in, XML out |
 | Field map explorer | `sigwaz fieldmaps` | built-in browser |
 
