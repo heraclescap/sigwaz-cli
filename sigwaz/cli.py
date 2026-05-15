@@ -13,7 +13,7 @@ Commands:
 Quick start:
   sigwaz convert rule.yml -o rule_rules.xml
   sigwaz batch rules/ -o output/ --split 50 --min-level medium
-  sigwaz batch rules.yml -o output/ --excluded-statuses experimental,deprecated
+  sigwaz batch rules.yml -o output/ -I experimental,test
   sigwaz batch rules.zip -o output/ --split 50
   sigwaz batch rules/ -o output/ --config ~/.sigwaz/config.yaml
   sigwaz check wazuh_rules.xml
@@ -106,8 +106,7 @@ _DEFAULTS: Dict[str, Any] = {
     "no_full_log":          True,
     "email_alert":          False,
     "email_levels":         "critical,high",
-    "process_experimental": True,
-    "excluded_statuses":    "experimental,test,deprecated,unsupported",
+    "include_statuses":     "",   # statuses allowed beyond 'stable' (empty = stable only)
     "min_level":            "",
     "allowed_products":     "",
     "sigma_guid_email":     "",
@@ -195,13 +194,15 @@ def _load_json_opt(value: Optional[str], flag: str) -> dict:
 
 # ── Build config ──────────────────────────────────────────────────────────────
 
+_ALL_NON_STABLE = {"experimental", "test", "deprecated", "unsupported"}
+
+
 def _build_config(
     rule_id_start: Optional[int],
     no_full_log: Optional[bool],
     email_alert: Optional[bool],
     email_levels: Optional[str],
-    process_experimental: Optional[bool],
-    excluded_statuses: Optional[str],
+    include_statuses: Optional[str],
     min_level: Optional[str],
     allowed_products: Optional[str],
     sigma_guid_email: Optional[str],
@@ -251,11 +252,10 @@ def _build_config(
             return _load_json_opt(str(v), flag)
         return {}
 
-    r_process_experimental = _r(process_experimental, "process_experimental")
-    es = _rl(excluded_statuses, "excluded_statuses")
-    # legacy --no-experimental maps to excluding "experimental"
-    if not r_process_experimental and "experimental" not in es:
-        es.append("experimental")
+    # Compute effective excluded statuses from the include list.
+    # Only 'stable' rules are converted by default; --include-statuses unlocks others.
+    included_extra = set(_rl(include_statuses, "include_statuses"))
+    es = list(_ALL_NON_STABLE - included_extra)
 
     r_min_level = _r(min_level, "min_level")
     r_sigma_guid_email = _rl(sigma_guid_email, "sigma_guid_email")
@@ -276,7 +276,7 @@ def _build_config(
         email_alert=_r(email_alert, "email_alert"),
         email_levels=_rl(email_levels, "email_levels"),
         sigma_guid_email=r_sigma_guid_email,
-        process_experimental=r_process_experimental,
+        process_experimental=True,  # always True; CLI uses include_statuses instead
         excluded_statuses=es,
         min_level=r_min_level.strip().lower() if r_min_level else "",
         allowed_products=_rl(allowed_products, "allowed_products"),
@@ -307,16 +307,13 @@ _OPT_EMAIL_LVL   = typer.Option(None, "--email-levels", "-E",
     help="Comma-separated Sigma levels that trigger email alerts when --email-alert is set. "
          "Example: --email-levels critical,high")
 
-_OPT_EXPERIMENTAL = typer.Option(None, "--experimental/--no-experimental",
-    help="[Deprecated — prefer --excluded-statuses] "
-         "Whether to convert rules whose Sigma status is 'experimental'.")
-
-_OPT_EXCLUDED    = typer.Option(None, "--excluded-statuses", "-x",
-    help="Comma-separated Sigma statuses to skip. Rules with a matching status are counted "
-         "as skipped (not errors). "
-         "Default: experimental,test,deprecated,unsupported (only stable rules are converted). "
-         "Choices: experimental, test, stable, deprecated, unsupported. "
-         "Example: -x experimental,deprecated  or  -x '' to convert all statuses")
+_OPT_INCLUDED    = typer.Option(None, "--include-statuses", "-I",
+    help="Comma-separated Sigma statuses to convert in addition to 'stable'. "
+         "By default only stable rules are converted (non-stable are skipped). "
+         "Choices: experimental, test, deprecated, unsupported. "
+         "Example: -I experimental              (stable + experimental) "
+         "Example: -I experimental,test         (stable + experimental + test) "
+         "Example: -I experimental,test,deprecated,unsupported  (all statuses)")
 
 _OPT_MIN_LEVEL   = typer.Option(None, "--min-level", "-l",
     help="Skip rules whose Sigma severity is below this threshold. "
@@ -386,7 +383,7 @@ _OPT_LVL_CRIT    = typer.Option(None, "--level-critical",
         "  sigwaz convert rule.yml\n"
         "  sigwaz convert rule.yml -o rule_rules.xml\n"
         "  sigwaz convert rule.yml -r 910000 --no-full-log --level-high 14\n"
-        "  sigwaz convert rule.yml --excluded-statuses experimental --min-level medium"
+        "  sigwaz convert rule.yml -I experimental --min-level medium"
     ),
 )
 def cmd_convert(
@@ -408,8 +405,7 @@ def cmd_convert(
     no_full_log:   Optional[bool] = _OPT_NO_FULL_LOG,
     email_alert:   Optional[bool] = _OPT_EMAIL,
     email_levels:  Optional[str]  = _OPT_EMAIL_LVL,
-    process_experimental: Optional[bool] = _OPT_EXPERIMENTAL,
-    excluded_statuses: Optional[str] = _OPT_EXCLUDED,
+    include_statuses: Optional[str] = _OPT_INCLUDED,
     min_level:     Optional[str]  = _OPT_MIN_LEVEL,
     allowed_products: Optional[str] = _OPT_PRODUCTS,
     sigma_guid_email: Optional[str] = _OPT_GUID_EMAIL,
@@ -439,7 +435,7 @@ def cmd_convert(
     cfg_data = _load_config_file(config_file) if config_file else {}
     config = _build_config(
         rule_id_start, no_full_log, email_alert, email_levels,
-        process_experimental, excluded_statuses, min_level, allowed_products,
+        include_statuses, min_level, allowed_products,
         sigma_guid_email, rules_link_base, split_size, id_file,
         field_overrides, if_sid_overrides, if_group_overrides,
         level_informational, level_low, level_medium, level_high, level_critical,
@@ -536,8 +532,7 @@ def cmd_convert(
         "  sigwaz batch rules.yml -o output/ --split 50\n"
         "  sigwaz batch rules.zip -o output/ --split 50\n"
         "  sigwaz batch rules/ -o output/ --config ~/.sigwaz/config.yaml\n"
-        "  sigwaz batch rules/ -o output/ --min-level medium "
-        "--excluded-statuses experimental,deprecated\n"
+        "  sigwaz batch rules/ -o output/ --min-level medium -I experimental\n"
         "  sigwaz batch rules/ -o output/ --allowed-products windows,linux --zip"
     ),
 )
@@ -563,8 +558,7 @@ def cmd_batch(
     no_full_log:   Optional[bool] = _OPT_NO_FULL_LOG,
     email_alert:   Optional[bool] = _OPT_EMAIL,
     email_levels:  Optional[str]  = _OPT_EMAIL_LVL,
-    process_experimental: Optional[bool] = _OPT_EXPERIMENTAL,
-    excluded_statuses: Optional[str] = _OPT_EXCLUDED,
+    include_statuses: Optional[str] = _OPT_INCLUDED,
     min_level:     Optional[str]  = _OPT_MIN_LEVEL,
     allowed_products: Optional[str] = _OPT_PRODUCTS,
     sigma_guid_email: Optional[str] = _OPT_GUID_EMAIL,
@@ -585,7 +579,7 @@ def cmd_batch(
     cfg_data = _load_config_file(config_file) if config_file else {}
     config = _build_config(
         rule_id_start, no_full_log, email_alert, email_levels,
-        process_experimental, excluded_statuses, min_level, allowed_products,
+        include_statuses, min_level, allowed_products,
         sigma_guid_email, rules_link_base, split_size, id_file,
         field_overrides, if_sid_overrides, if_group_overrides,
         level_informational, level_low, level_medium, level_high, level_critical,
@@ -644,9 +638,12 @@ def cmd_batch(
     console.print(f"  Found [accent]{len(yaml_docs)}[/] Sigma rule(s) — converting…\n")
 
     # Active filters summary
+    included_extra = _ALL_NON_STABLE - set(config.excluded_statuses)
     active_filters: List[str] = []
-    if config.excluded_statuses:
-        active_filters.append(f"exclude-status={','.join(config.excluded_statuses)}")
+    if included_extra:
+        active_filters.append(f"include-status=stable,{','.join(sorted(included_extra))}")
+    else:
+        active_filters.append("include-status=stable")
     if config.min_level:
         active_filters.append(f"min-level={config.min_level}")
     if config.allowed_products:

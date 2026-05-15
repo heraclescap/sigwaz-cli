@@ -6,6 +6,86 @@ SigWaz supports single-rule conversion, recursive batch directory processing, ZI
 
 ---
 
+## Example
+
+**Input** — a standard Sigma rule (`rule.yml`):
+
+```yaml
+title: Suspicious PowerShell Download Cradle
+status: stable
+description: Detects PowerShell download cradle patterns used for payload delivery
+author: SigWaz Example
+date: 2024/01/15
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        CommandLine|contains:
+            - 'IEX (New-Object'
+            - 'Invoke-Expression'
+            - 'DownloadString('
+    condition: selection
+falsepositives:
+    - Legitimate administrative scripts
+level: high
+tags:
+    - attack.execution
+    - attack.t1059.001
+```
+
+**Command:**
+
+```bash
+python sigwaz.py convert rule.yml
+```
+
+**Terminal output:**
+
+```
+╭──────────────────────────────────────────╮
+│  SigWaz  v1.0.0                          │
+│  Sigma → Wazuh  ·  State-of-the-art      │
+╰──────────────────────────────────────────╯
+
+  ✓  Suspicious PowerShell Download Cradle
+  Sigma ID :  —
+  Level    :  high
+  Status   :  stable
+  Wazuh IDs:  900001
+  Rules    :  1 generated  (1.4 ms)
+  MITRE    :  T1059.001
+
+  ✓  XML validation passed  (1 rule, 0 warnings)
+```
+
+**Generated Wazuh XML** (`suspicious_powershell_download_cradle_rules.xml`):
+
+```xml
+<!-- Author: SigWaz Example -->
+<!-- Description: Detects PowerShell download cradle patterns used for payload delivery -->
+<!-- Date: 2024/01/15 | Status: stable -->
+<!-- References: https://github.com/SigmaHQ/sigma/tree/master/rules -->
+<group name="sigma,windows,process_creation,">
+
+  <rule id="900001" level="12">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)IEX \(New\-Object|Invoke\-Expression|DownloadString\(</field>
+    <description>Suspicious PowerShell Download Cradle</description>
+    <options>no_full_log</options>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>execution,</group>
+  </rule>
+
+</group>
+```
+
+Drop it into `/var/ossec/etc/rules/` on your Wazuh manager and reload — done.
+
+---
+
 ## Features
 
 - **Single & batch conversion** — one file, a directory tree, a multi-doc YAML, or a ZIP archive
@@ -65,8 +145,8 @@ python sigwaz.py convert rule.yml -o output/rule_rules.xml
 # Dry-run (analyse without writing)
 python sigwaz.py convert rule.yml --dry-run
 
-# Custom rule ID base, skip experimental
-python sigwaz.py convert rule.yml -r 910000 --excluded-statuses experimental
+# Custom rule ID base; also include experimental rules (stable is always included)
+python sigwaz.py convert rule.yml -r 910000 -I experimental
 ```
 
 ### Batch-convert a directory
@@ -78,10 +158,11 @@ python sigwaz.py batch rules/windows/ -o output/
 # Split into chunks of 100 rules max
 python sigwaz.py batch rules/ -o output/ --split 100
 
-# Filter: only medium+ severity, skip experimental and deprecated
-python sigwaz.py batch rules/ -o output/ \
-  --min-level medium \
-  --excluded-statuses experimental,deprecated
+# Filter: medium+ severity, stable rules only (default) — nothing extra to add
+python sigwaz.py batch rules/ -o output/ --min-level medium
+
+# Also include experimental and test rules on top of stable
+python sigwaz.py batch rules/ -o output/ -I experimental,test
 
 # Only Windows and Linux rules
 python sigwaz.py batch rules/ -o output/ --allowed-products windows,linux
@@ -187,7 +268,7 @@ python sigwaz.py sidmaps
 | `--output` | `-o` | — | Output file or directory |
 | `--rule-id-start` | `-r` | `900000` | Starting Wazuh rule ID |
 | `--split` | `-s` | `50` | Max rules per XML file (0 = no split) |
-| `--excluded-statuses` | `-x` | `experimental,test,deprecated,unsupported` | Sigma statuses to skip (CSV). Pass `-x ''` to convert all. |
+| `--include-statuses` | `-I` | — | Sigma statuses to convert **in addition to** `stable`. Default: only stable rules. Example: `-I experimental` or `-I experimental,test` |
 | `--min-level` | `-l` | — | Minimum Sigma severity (`low`/`medium`/`high`/`critical`) |
 | `--allowed-products` | `-p` | — | Logsource product whitelist (CSV) |
 | `--zip` | `-z` | disabled | Bundle output XML files into a ZIP |
@@ -217,17 +298,31 @@ Windows, Sysmon, SysmonForLinux, Linux Auditd, SSH, PAM, Sudo, ClamAV, Apache, N
 
 ---
 
-## SigWaz Web
+## SigWaz Web — the recommended experience
 
-A full web interface for SigWaz is available as a separate private application:
+The CLI is powerful, but if you are doing **day-to-day conversions**, working within a **SOC team**, or just want to explore Sigma rules without memorising flags, the **SigWaz web interface** is the better tool for the job.
 
-- **React** frontend with live YAML editor and syntax-highlighted XML output
-- **FastAPI** backend exposing the same conversion engine as this CLI
-- **Docker Compose** deployment with Nginx + automatic TLS (Let's Encrypt)
-- Batch upload, field-mapping explorer, and conversion settings panel
+| | CLI | Web |
+|---|---|---|
+| Setup | Python + pip | Open a browser |
+| Single conversion | ✓ | ✓ live, as you type |
+| Batch / ZIP | ✓ | ✓ drag & drop |
+| Output download | file system | one-click `.xml` or `.zip` |
+| Settings | flags / config file | graphical panel |
+| Team sharing | script + docs | share a URL |
+| Syntax highlighting | — | ✓ YAML in, XML out |
+| Field map explorer | `sigwaz fieldmaps` | built-in browser |
 
-The web application is self-hosted and not publicly distributed.  
-Contact the maintainer or refer to the private repository for access.
+**Why teams prefer the web version:**
+
+- **Zero installation for end users** — a URL is all they need, no Python environment to manage
+- **Instant feedback** — conversion errors surface in real time as you edit the YAML, not after running a command
+- **Shareable results** — download the XML directly from the browser and hand it off; no shared file system needed
+- **Graphical settings** — rule ID base, severity mapping, email alert levels, product filters — all configurable through a UI, no flags to look up
+- **Identical output** — the web app runs the exact same engine as this CLI; a rule converted in the browser produces byte-for-byte the same XML as `sigwaz convert`
+
+The web application is **self-hosted** (Docker Compose, one-command deployment) and is not publicly distributed.  
+Contact the maintainer or refer to the private repository for access and deployment instructions.
 
 ---
 
