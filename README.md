@@ -181,29 +181,31 @@ python sigwaz.py sidmaps
 
 ## All CLI options
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--config / -c` | — | YAML or JSON config file |
-| `--rule-id-start / -r` | `900000` | Starting Wazuh rule ID |
-| `--no-full-log / --full-log` | enabled | Append `no_full_log` option to rules |
-| `--email-alert / --no-email` | disabled | Append `alert_by_email` to qualifying rules |
-| `--email-levels` | `critical,high` | Comma-separated levels that trigger email |
-| `--excluded-statuses` | — | Sigma statuses to skip (CSV) |
-| `--min-level` | — | Minimum Sigma severity (low/medium/high/critical) |
-| `--allowed-products` | — | Whitelist of logsource products (CSV) |
-| `--split / -s` | `50` | Max rules per XML file (0 = no split) |
-| `--zip` | disabled | Bundle output XML files into a ZIP |
-| `--id-file` | — | Path to ID persistence JSON file |
-| `--field-overrides` | — | JSON: per-product field map overrides |
-| `--if-sid-overrides` | — | JSON: per-product if_sid overrides |
-| `--if-group-overrides` | — | JSON: per-product if_group overrides |
-| `--level-informational` | `5` | Wazuh level for Sigma informational rules |
-| `--level-low` | `7` | Wazuh level for Sigma low rules |
-| `--level-medium` | `10` | Wazuh level for Sigma medium rules |
-| `--level-high` | `12` | Wazuh level for Sigma high rules |
-| `--level-critical` | `15` | Wazuh level for Sigma critical rules |
-| `--dry-run` | disabled | Parse and report without writing files |
-| `--validate / --no-validate` | enabled | Run XML validation after conversion |
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--config` | `-c` | — | YAML or JSON config file |
+| `--output` | `-o` | — | Output file or directory |
+| `--rule-id-start` | `-r` | `900000` | Starting Wazuh rule ID |
+| `--split` | `-s` | `50` | Max rules per XML file (0 = no split) |
+| `--excluded-statuses` | `-x` | `experimental,test,deprecated,unsupported` | Sigma statuses to skip (CSV). Pass `-x ''` to convert all. |
+| `--min-level` | `-l` | — | Minimum Sigma severity (`low`/`medium`/`high`/`critical`) |
+| `--allowed-products` | `-p` | — | Logsource product whitelist (CSV) |
+| `--zip` | `-z` | disabled | Bundle output XML files into a ZIP |
+| `--dry-run` | `-d` | disabled | Parse and report without writing files |
+| `--show-xml` | `-X` | disabled | Print XML to terminal even when `--output` is set |
+| `--id-file` | `-i` | — | Path to ID persistence JSON file |
+| `--email-levels` | `-E` | `critical,high` | Levels that trigger email alerts |
+| `--no-full-log / --full-log` | — | enabled | Append `no_full_log` option to rules |
+| `--email-alert / --no-email` | — | disabled | Append `alert_by_email` to qualifying rules |
+| `--validate / --no-validate` | — | enabled | Run XML validation after conversion |
+| `--field-overrides` | — | — | JSON: per-product field map overrides |
+| `--if-sid-overrides` | — | — | JSON: per-product if_sid overrides |
+| `--if-group-overrides` | — | — | JSON: per-product if_group overrides |
+| `--level-informational` | — | `5` | Wazuh level for Sigma informational rules |
+| `--level-low` | — | `7` | Wazuh level for Sigma low rules |
+| `--level-medium` | — | `10` | Wazuh level for Sigma medium rules |
+| `--level-high` | — | `12` | Wazuh level for Sigma high rules |
+| `--level-critical` | — | `15` | Wazuh level for Sigma critical rules |
 
 ---
 
@@ -215,6 +217,20 @@ Windows, Sysmon, SysmonForLinux, Linux Auditd, SSH, PAM, Sudo, ClamAV, Apache, N
 
 ---
 
+## SigWaz Web
+
+A full web interface for SigWaz is available as a separate private application:
+
+- **React** frontend with live YAML editor and syntax-highlighted XML output
+- **FastAPI** backend exposing the same conversion engine as this CLI
+- **Docker Compose** deployment with Nginx + automatic TLS (Let's Encrypt)
+- Batch upload, field-mapping explorer, and conversion settings panel
+
+The web application is self-hosted and not publicly distributed.  
+Contact the maintainer or refer to the private repository for access.
+
+---
+
 ## License
 
-MIT
+MIT License — see [LICENSE](LICENSE)

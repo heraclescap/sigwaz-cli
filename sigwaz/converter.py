@@ -59,7 +59,7 @@ class ConversionConfig:
     split_size: int = 0          # 0 = no split; N = max rules per XML file
     process_experimental: bool = True  # legacy; prefer excluded_statuses
     # ── New filters ──────────────────────────────────────────────────────────
-    excluded_statuses: List[str] = field(default_factory=list)   # e.g. ["experimental","deprecated"]
+    excluded_statuses: List[str] = field(default_factory=lambda: ["experimental", "test", "deprecated", "unsupported"])
     min_level: str = ""          # skip rules below this level (empty = all)
     allowed_products: List[str] = field(default_factory=list)    # empty = all products
     id_tracker: Optional[IDTracker] = field(default=None, repr=False)

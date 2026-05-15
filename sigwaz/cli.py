@@ -107,7 +107,7 @@ _DEFAULTS: Dict[str, Any] = {
     "email_alert":          False,
     "email_levels":         "critical,high",
     "process_experimental": True,
-    "excluded_statuses":    "",
+    "excluded_statuses":    "experimental,test,deprecated,unsupported",
     "min_level":            "",
     "allowed_products":     "",
     "sigma_guid_email":     "",
@@ -303,7 +303,7 @@ _OPT_EMAIL       = typer.Option(None, "--email-alert/--no-email",
     help="Append <options>alert_by_email</options> to qualifying rules. "
          "Combine with --email-levels to target specific severities.")
 
-_OPT_EMAIL_LVL   = typer.Option(None, "--email-levels",
+_OPT_EMAIL_LVL   = typer.Option(None, "--email-levels", "-E",
     help="Comma-separated Sigma levels that trigger email alerts when --email-alert is set. "
          "Example: --email-levels critical,high")
 
@@ -311,18 +311,19 @@ _OPT_EXPERIMENTAL = typer.Option(None, "--experimental/--no-experimental",
     help="[Deprecated — prefer --excluded-statuses] "
          "Whether to convert rules whose Sigma status is 'experimental'.")
 
-_OPT_EXCLUDED    = typer.Option(None, "--excluded-statuses",
+_OPT_EXCLUDED    = typer.Option(None, "--excluded-statuses", "-x",
     help="Comma-separated Sigma statuses to skip. Rules with a matching status are counted "
          "as skipped (not errors). "
+         "Default: experimental,test,deprecated,unsupported (only stable rules are converted). "
          "Choices: experimental, test, stable, deprecated, unsupported. "
-         "Example: --excluded-statuses experimental,deprecated")
+         "Example: -x experimental,deprecated  or  -x '' to convert all statuses")
 
-_OPT_MIN_LEVEL   = typer.Option(None, "--min-level",
+_OPT_MIN_LEVEL   = typer.Option(None, "--min-level", "-l",
     help="Skip rules whose Sigma severity is below this threshold. "
          "Choices: low, medium, high, critical (empty = convert all). "
          "Example: --min-level medium  → skips informational and low")
 
-_OPT_PRODUCTS    = typer.Option(None, "--allowed-products",
+_OPT_PRODUCTS    = typer.Option(None, "--allowed-products", "-p",
     help="Comma-separated logsource product whitelist. Rules for any other product are skipped. "
          "Empty = convert all products. "
          "Example: --allowed-products windows,linux,aws")
@@ -342,7 +343,7 @@ _OPT_SPLIT       = typer.Option(None, "--split", "-s",
          "Splitting prevents Wazuh OOM on import for large rulesets. "
          "Example: --split 100 → outputs rules-1.xml, rules-2.xml, …")
 
-_OPT_ID_FILE     = typer.Option(None, "--id-file",
+_OPT_ID_FILE     = typer.Option(None, "--id-file", "-i",
     help="Path to a JSON file for persisting Sigma GUID → Wazuh rule ID mappings. "
          "Guarantees stable IDs across re-runs of the same ruleset. "
          "Example: --id-file ~/.sigwaz/ids.json")
@@ -393,9 +394,9 @@ def cmd_convert(
     output: Optional[Path] = typer.Option(None, "--output", "-o",
         help="Output XML file path. If omitted, XML is printed to stdout. "
              "The _rules.xml suffix convention is recommended: rule_rules.xml"),
-    dry_run: bool = typer.Option(False, "--dry-run",
+    dry_run: bool = typer.Option(False, "--dry-run", "-d",
         help="Parse and analyse the rule without writing any output files."),
-    show_xml: bool = typer.Option(False, "--show-xml",
+    show_xml: bool = typer.Option(False, "--show-xml", "-X",
         help="Print XML to the terminal even when --output is set."),
     validate: bool = typer.Option(True, "--validate/--no-validate",
         help="Run Wazuh XML validation after conversion (structure, duplicate IDs, etc.)."),
@@ -548,9 +549,9 @@ def cmd_batch(
     stem: Optional[str] = typer.Option(None, "--name", "-n",
         help="Base stem for output filenames. Defaults to the input directory/file name. "
              "Output files: <stem>_rules.xml or <stem>_rules-1.xml, <stem>_rules-2.xml, …"),
-    zip_output: bool = typer.Option(False, "--zip",
+    zip_output: bool = typer.Option(False, "--zip", "-z",
         help="Bundle all output XML files into a single ZIP archive alongside the XML files."),
-    dry_run: bool = typer.Option(False, "--dry-run",
+    dry_run: bool = typer.Option(False, "--dry-run", "-d",
         help="Convert and report statistics without writing any output files."),
     validate: bool = typer.Option(True, "--validate/--no-validate",
         help="Run Wazuh XML validation on the merged output after conversion."),
