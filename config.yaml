@@ -1,0 +1,26 @@
+rule_id_start: 900000
+no_full_log: true
+email_alert: false
+email_levels:
+  - critical
+  - high
+excluded_statuses:
+  - experimental
+  - deprecated
+min_level: medium
+allowed_products:
+  - windows
+  - linux
+  - aws
+split_size: 50
+level_informational: 5
+level_low: 7
+level_medium: 10
+level_high: 12
+level_critical: 15
+# Optional: field path overrides per product
+field_overrides:
+  windows:
+    CommandLine: win.eventdata.commandLine
+# Optional: stable rule IDs across re-runs
+id_file: ~/.sigwaz/ids.json
