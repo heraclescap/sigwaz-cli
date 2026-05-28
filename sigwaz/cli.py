@@ -651,7 +651,9 @@ def cmd_batch(
     if active_filters:
         console.print(f"  [muted]Filters  :[/] {' · '.join(active_filters)}\n")
 
-    # Convert
+    # Convert — join all docs into one multi-doc YAML so that convert_batch
+    # uses a single _IDAllocator across all files (prevents ID restarts).
+    combined_yaml = "\n---\n".join(yaml_docs)
     all_results = []
     with Progress(
         SpinnerColumn(style="cyan"),
@@ -663,9 +665,8 @@ def cmd_batch(
         console=console,
     ) as prog:
         task = prog.add_task("Converting", total=len(yaml_docs))
-        for yaml_str in yaml_docs:
-            all_results.append(convert_single(yaml_str, config))
-            prog.advance(task)
+        all_results = convert_batch(combined_yaml, config)
+        prog.update(task, completed=len(yaml_docs))
 
     ok          = sum(1 for r in all_results if r.rule_count > 0 and not r.errors)
     warn        = sum(1 for r in all_results if r.skipped)
