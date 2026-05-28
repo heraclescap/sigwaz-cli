@@ -223,7 +223,10 @@ def get_if_sid(
     for key in candidates:
         # 1. Override
         if overrides and key in overrides:
-            return overrides[key]
+            val = overrides[key]
+            if isinstance(val, list):
+                return ", ".join(str(v) for v in val)
+            return str(val)
         # 2. Built-in
         if key in IF_SID_MAP:
             return IF_SID_MAP[key]
@@ -247,7 +250,10 @@ def get_if_group(
 
     for key in candidates:
         if overrides and key in overrides:
-            return overrides[key]
+            val = overrides[key]
+            if isinstance(val, list):
+                return ", ".join(str(v) for v in val)
+            return str(val)
         if key in IF_GROUP_MAP:
             return IF_GROUP_MAP[key]
 
