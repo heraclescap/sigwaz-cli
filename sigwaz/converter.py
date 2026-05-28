@@ -15,7 +15,7 @@ from .sigma_parser import SigmaRule, parse_rule, parse_multi
 from .sid_maps import resolve_product
 from .wazuh_builder import build_rule_element
 from .mitre import extract_mitre_ids, extract_tactics
-from ..utils.id_tracker import IDTracker
+from .utils.id_tracker import IDTracker
 
 
 # ── Default level map ────────────────────────────────────────────────────────
