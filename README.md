@@ -111,7 +111,7 @@ Drop it into `/var/ossec/etc/rules/` on your Wazuh manager and reload — done.
 ## Installation
 
 ```bash
-git clone https://github.com/your-org/sigwaz-cli.git
+git clone https://github.com/heraclecap/sigwaz-cli.git
 cd sigwaz-cli
 pip install -r requirements.txt
 ```
