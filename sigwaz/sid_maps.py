@@ -199,6 +199,12 @@ SERVICE_ALIASES: Dict[str, str] = {
 }
 
 
+def _normalize_override_val(val) -> str:
+    if isinstance(val, list):
+        return ", ".join(str(v) for v in val)
+    return str(val)
+
+
 def get_if_sid(
     logsource: dict,
     overrides: Optional[Dict[str, str]] = None,
@@ -206,28 +212,24 @@ def get_if_sid(
     """
     Resolve the if_sid value for a given logsource dict.
 
-    Lookup order:
-      1. Session overrides (passed via ConversionConfig.if_sid_overrides)
-      2. logsource.service (highest specificity)
-      3. logsource.product
-    Returns None if no mapping found.
+    Two-pass lookup so that any override always wins over built-in values:
+      Pass 1 — scan all candidates against overrides (service → product order)
+      Pass 2 — scan all candidates against IF_SID_MAP (service → product order)
+    This means an override on the product key (e.g. "zeek") applies to ALL
+    services of that product, even when a service key has a built-in entry.
     """
     service = (logsource.get("service") or "").lower().strip()
     product = (logsource.get("product") or "").lower().strip()
 
-    # Normalize service via alias table
     svc_product = SERVICE_ALIASES.get(service, service) if service else ""
-
     candidates = [c for c in [service, svc_product, product] if c]
 
+    if overrides:
+        for key in candidates:
+            if key in overrides:
+                return _normalize_override_val(overrides[key])
+
     for key in candidates:
-        # 1. Override
-        if overrides and key in overrides:
-            val = overrides[key]
-            if isinstance(val, list):
-                return ", ".join(str(v) for v in val)
-            return str(val)
-        # 2. Built-in
         if key in IF_SID_MAP:
             return IF_SID_MAP[key]
 
@@ -241,6 +243,7 @@ def get_if_group(
     """
     Resolve the if_group value for a given logsource dict.
     Only used when IF_GROUP_MAP has an entry for the product/service.
+    Same two-pass strategy as get_if_sid.
     """
     service = (logsource.get("service") or "").lower().strip()
     product = (logsource.get("product") or "").lower().strip()
@@ -248,12 +251,12 @@ def get_if_group(
     svc_product = SERVICE_ALIASES.get(service, service) if service else ""
     candidates = [c for c in [service, svc_product, product] if c]
 
+    if overrides:
+        for key in candidates:
+            if key in overrides:
+                return _normalize_override_val(overrides[key])
+
     for key in candidates:
-        if overrides and key in overrides:
-            val = overrides[key]
-            if isinstance(val, list):
-                return ", ".join(str(v) for v in val)
-            return str(val)
         if key in IF_GROUP_MAP:
             return IF_GROUP_MAP[key]
 
