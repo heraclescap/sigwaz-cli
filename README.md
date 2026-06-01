@@ -1,6 +1,6 @@
 # SigWaz CLI
 
-Convert [Sigma](https://github.com/SigmaHQ/sigma) detection rules to production-ready [Wazuh](https://wazuh.com) XML — from the command line.
+Convert [Sigma](https://github.com/SigmaHQ/sigma) detection rules to production-ready [Wazuh](https://wazuh.com) XML, from the command line.
 
 SigWaz supports single-rule conversion, recursive batch directory processing, ZIP archives, and full metadata filtering, all scriptable with no interactive prompts.
 
@@ -8,7 +8,7 @@ SigWaz supports single-rule conversion, recursive batch directory processing, ZI
 
 ## Example
 
-**Input** — a standard Sigma rule (`rule.yml`):
+**Input** - a standard Sigma rule (`rule.yml`):
 
 ```yaml
 title: Suspicious PowerShell Download Cradle
@@ -82,7 +82,7 @@ python sigwaz.py convert rule.yml
 </group>
 ```
 
-Drop it into `/var/ossec/etc/rules/` on your Wazuh manager and reload — done.
+Drop it into `/var/ossec/etc/rules/` on your Wazuh manager and reload, done.
 
 ---
 
