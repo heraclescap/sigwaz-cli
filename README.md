@@ -8,7 +8,7 @@ SigWaz supports single-rule conversion, recursive batch directory processing, ZI
 
 ## Example
 
-**Input** - a standard Sigma rule (`rule.yml`):
+**Input** : a standard Sigma rule (`rule.yml`):
 
 ```yaml
 title: Suspicious PowerShell Download Cradle
