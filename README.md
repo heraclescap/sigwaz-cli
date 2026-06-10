@@ -49,7 +49,7 @@ python sigwaz.py convert rule.yml
 ╰──────────────────────────────────────────╯
 
   ✓  Suspicious PowerShell Download Cradle
-  Sigma ID :  —
+  Sigma ID :  -
   Level    :  high
   Status   :  stable
   Wazuh IDs:  900001
@@ -88,16 +88,16 @@ Drop it into `/var/ossec/etc/rules/` on your Wazuh manager and reload, done.
 
 ## Features
 
-- **Single & batch conversion** — one file, a directory tree, a multi-doc YAML, or a ZIP archive
-- **Recursive directory scanning** — walks subdirectories automatically, skips `deprecated/` folders
-- **Advanced metadata filtering** — filter by status (`experimental`, `deprecated`…), minimum severity level, or allowed products
-- **XML splitting** — automatically split large outputs into chunks to prevent Wazuh OOM on import
-- **Stable rule IDs** — optional ID tracker persists Sigma GUID → Wazuh ID mappings across re-runs
-- **Config file support** — store all parameters in a YAML or JSON profile; CLI flags override when needed
-- **ZIP output** — bundle all split XML files into a single `.zip` for easy deployment
-- **XML validation** — built-in structural validation after every conversion
-- **Field mapping tables** — inspect all Sigma → Wazuh decoder path mappings
-- **No TUI, fully scriptable** — designed for automation and CI pipelines
+- **Single & batch conversion** : one file, a directory tree, a multi-doc YAML, or a ZIP archive
+- **Recursive directory scanning** : walks subdirectories automatically, skips `deprecated/` folders
+- **Advanced metadata filtering** : filter by status (`experimental`, `deprecated`…), minimum severity level, or allowed products
+- **XML splitting** : automatically split large outputs into chunks to prevent Wazuh OOM on import
+- **Stable rule IDs** : optional ID tracker persists Sigma GUID → Wazuh ID mappings across re-runs
+- **Config file support** : store all parameters in a YAML or JSON profile; CLI flags override when needed
+- **ZIP output** : bundle all split XML files into a single `.zip` for easy deployment
+- **XML validation** : built-in structural validation after every conversion
+- **Field mapping tables** : inspect all Sigma → Wazuh decoder path mappings
+- **No TUI, fully scriptable** : designed for automation and CI pipelines
 
 ---
 
@@ -158,7 +158,7 @@ python sigwaz.py batch rules/windows/ -o output/
 # Split into chunks of 100 rules max
 python sigwaz.py batch rules/ -o output/ --split 100
 
-# Filter: medium+ severity, stable rules only (default) — nothing extra to add
+# Filter: medium+ severity, stable rules only (default) : nothing extra to add
 python sigwaz.py batch rules/ -o output/ --min-level medium
 
 # Also include experimental and test rules on top of stable
@@ -264,29 +264,29 @@ python sigwaz.py sidmaps
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
-| `--config` | `-c` | — | YAML or JSON config file |
-| `--output` | `-o` | — | Output file or directory |
+| `--config` | `-c` | - | YAML or JSON config file |
+| `--output` | `-o` | - | Output file or directory |
 | `--rule-id-start` | `-r` | `900000` | Starting Wazuh rule ID |
 | `--split` | `-s` | `50` | Max rules per XML file (0 = no split) |
-| `--include-statuses` | `-I` | — | Sigma statuses to convert **in addition to** `stable`. Default: only stable rules. Example: `-I experimental` or `-I experimental,test` |
-| `--min-level` | `-l` | — | Minimum Sigma severity (`low`/`medium`/`high`/`critical`) |
-| `--allowed-products` | `-p` | — | Logsource product whitelist (CSV) |
+| `--include-statuses` | `-I` | - | Sigma statuses to convert **in addition to** `stable`. Default: only stable rules. Example: `-I experimental` or `-I experimental,test` |
+| `--min-level` | `-l` | - | Minimum Sigma severity (`low`/`medium`/`high`/`critical`) |
+| `--allowed-products` | `-p` | - | Logsource product whitelist (CSV) |
 | `--zip` | `-z` | disabled | Bundle output XML files into a ZIP |
 | `--dry-run` | `-d` | disabled | Parse and report without writing files |
 | `--show-xml` | `-X` | disabled | Print XML to terminal even when `--output` is set |
-| `--id-file` | `-i` | — | Path to ID persistence JSON file |
+| `--id-file` | `-i` | - | Path to ID persistence JSON file |
 | `--email-levels` | `-E` | `critical,high` | Levels that trigger email alerts |
-| `--no-full-log / --full-log` | — | enabled | Append `no_full_log` option to rules |
-| `--email-alert / --no-email` | — | disabled | Append `alert_by_email` to qualifying rules |
-| `--validate / --no-validate` | — | enabled | Run XML validation after conversion |
-| `--field-overrides` | — | — | JSON: per-product field map overrides |
-| `--if-sid-overrides` | — | — | JSON: per-product if_sid overrides |
-| `--if-group-overrides` | — | — | JSON: per-product if_group overrides |
-| `--level-informational` | — | `5` | Wazuh level for Sigma informational rules |
-| `--level-low` | — | `7` | Wazuh level for Sigma low rules |
-| `--level-medium` | — | `10` | Wazuh level for Sigma medium rules |
-| `--level-high` | — | `12` | Wazuh level for Sigma high rules |
-| `--level-critical` | — | `15` | Wazuh level for Sigma critical rules |
+| `--no-full-log / --full-log` | - | enabled | Append `no_full_log` option to rules |
+| `--email-alert / --no-email` | - | disabled | Append `alert_by_email` to qualifying rules |
+| `--validate / --no-validate` | - | enabled | Run XML validation after conversion |
+| `--field-overrides` | - | - | JSON: per-product field map overrides |
+| `--if-sid-overrides` | - | - | JSON: per-product if_sid overrides |
+| `--if-group-overrides` | - | - | JSON: per-product if_group overrides |
+| `--level-informational` | - | `5` | Wazuh level for Sigma informational rules |
+| `--level-low` | - | `7` | Wazuh level for Sigma low rules |
+| `--level-medium` | - | `10` | Wazuh level for Sigma medium rules |
+| `--level-high` | - | `12` | Wazuh level for Sigma high rules |
+| `--level-critical` | - | `15` | Wazuh level for Sigma critical rules |
 
 ---
 
@@ -298,7 +298,7 @@ Windows, Sysmon, SysmonForLinux, Linux Auditd, SSH, PAM, Sudo, ClamAV, Apache, N
 
 ---
 
-## SigWaz Web — the recommended experience
+## SigWaz Web - the recommended experience
 
 The CLI is powerful, but if you are doing **day-to-day conversions**, working within a **SOC team**, or just want to explore Sigma rules without memorising flags, the **SigWaz web interface** is the better tool for the job.
 
@@ -309,16 +309,16 @@ The CLI is powerful, but if you are doing **day-to-day conversions**, working wi
 | Batch / ZIP | ✓ | ✓ drag & drop |
 | Output download | file system | one-click `.xml` or `.zip` |
 | Settings | flags / config file | graphical panel |
-| Syntax highlighting | — | ✓ YAML in, XML out |
+| Syntax highlighting | - | ✓ YAML in, XML out |
 | Field map explorer | `sigwaz fieldmaps` | built-in browser |
 
 **Why teams prefer the web version:**
 
-- **Zero installation for end users** — a URL is all they need, no Python environment to manage
-- **Instant feedback** — conversion errors surface in real time as you edit the YAML, not after running a command
-- **Shareable results** — download the XML directly from the browser and hand it off; no shared file system needed
-- **Graphical settings** — rule ID base, severity mapping, email alert levels, product filters — all configurable through a UI, no flags to look up
-- **Identical output** — the web app runs the exact same engine as this CLI; a rule converted in the browser produces byte-for-byte the same XML as `sigwaz convert`
+- **Zero installation for end users** : a URL is all they need, no Python environment to manage
+- **Instant feedback** : conversion errors surface in real time as you edit the YAML, not after running a command
+- **Shareable results** : download the XML directly from the browser and hand it off; no shared file system needed
+- **Graphical settings** : rule ID base, severity mapping, email alert levels, product filters, all configurable through a UI, no flags to look up
+- **Identical output** : the web app runs the exact same engine as this CLI; a rule converted in the browser produces byte-for-byte the same XML as `sigwaz convert`
 
 The web application is available at **[sigwaz.com](https://sigwaz.com)**.
 
@@ -326,4 +326,4 @@ The web application is available at **[sigwaz.com](https://sigwaz.com)**.
 
 ## License
 
-MIT License — see [LICENSE](LICENSE)
+MIT License - see [LICENSE](LICENSE)
