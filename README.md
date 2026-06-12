@@ -322,6 +322,10 @@ The CLI is powerful, but if you are doing **day-to-day conversions**, working wi
 
 The web application is available at **[sigwaz.com](https://sigwaz.com)**.
 
+![SigWaz Web - single conversion](sigwaz-web-1.png)
+
+![SigWaz Web - batch conversion](sigwaz-web-2.png)
+
 ---
 
 ## License
